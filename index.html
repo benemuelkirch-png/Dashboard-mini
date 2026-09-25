@@ -4,96 +4,229 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Mini-Dashboard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;800&display=swap" rel="stylesheet">
 <style>
   :root {
-    --bg:#14161c; --card:#1e212b; --text:#eef0f4; --sub:#9aa1b1;
-    --accent:#7c9fff; --done:#4a5064;
+    --bg-a:#161033; --bg-b:#0c2b40;
+    --glass: rgba(255,255,255,0.06); --glass-strong: rgba(255,255,255,0.1);
+    --border: rgba(255,255,255,0.14);
+    --text:#f2f3f9; --sub:#a6acc4;
+    --violet:#8b7bff; --violet-soft: rgba(139,123,255,0.25);
+    --green:#1db954; --green-soft: rgba(29,185,84,0.22);
+    --weather-accent:#f5b95c; --weather-soft: rgba(245,185,92,0.22);
   }
   * { box-sizing: border-box; }
   html, body { height: 100%; margin: 0; }
   body {
-    background: var(--bg); color: var(--text);
+    color: var(--text);
     font-family: -apple-system, 'Segoe UI', Roboto, sans-serif;
-    padding: 20px; display: flex; flex-direction: row; gap: 20px; overflow: hidden;
+    padding: 18px; display: flex; flex-direction: row; gap: 16px; overflow: hidden;
+    background:
+      radial-gradient(circle at 12% 18%, rgba(139,123,255,0.35), transparent 45%),
+      radial-gradient(circle at 88% 82%, rgba(29,185,84,0.18), transparent 50%),
+      radial-gradient(circle at 85% 10%, rgba(245,185,92,0.16), transparent 40%),
+      linear-gradient(160deg, var(--bg-a), var(--bg-b));
+    background-attachment: fixed;
   }
-  .col { display: flex; flex-direction: column; gap: 16px; min-width: 0; min-height: 0; }
-  .col-left { flex: 1.1; }
-  .col-right { flex: 1; min-height: 0; }
-  .clock { font-size: clamp(1.2rem, 3.5vw, 2rem); font-weight: 600; }
-  .date { color: var(--sub); font-size: 0.85rem; margin-top: -10px; }
-  .card { background: var(--card); border-radius: 16px; padding: 16px; }
-  .spotify-card { flex: 1; display: flex; flex-direction: column; justify-content: center; align-items: center; gap: 16px; text-align: center; }
-  .art { width: min(45vh, 220px); height: min(45vh, 220px); border-radius: 12px; background: var(--bg); object-fit: cover; }
-  .track { font-weight: 700; font-size: 1.1rem; max-width: 90%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  .artist { color: var(--sub); font-size: 0.9rem; }
-  .progress-wrap { width: 85%; }
-  .progress-bar { width: 100%; height: 5px; background: var(--done); border-radius: 3px; overflow: hidden; }
-  .progress-fill { height: 100%; width: 0%; background: var(--accent); }
-  .progress-times { display: flex; justify-content: space-between; font-size: 0.75rem; color: var(--sub); margin-top: 4px; }
-  .controls { display: flex; align-items: center; gap: 18px; }
-  .ctrl-btn { background: var(--bg); color: var(--text); border: none; border-radius: 50%; width: 46px; height: 46px; font-size: 1.1rem; cursor: pointer; }
-  .ctrl-btn.main { width: 58px; height: 58px; background: var(--accent); font-size: 1.3rem; }
-  .ctrl-btn[disabled] { opacity: 0.35; cursor: not-allowed; }
-  .conn-note { font-size: 0.72rem; color: var(--sub); }
-  .link-btn { background: var(--accent); color: #fff; border: none; border-radius: 10px; padding: 10px 16px; font-size: 0.9rem; cursor: pointer; }
-  h2 { font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--sub); margin: 0 0 10px; }
-  form { display: flex; gap: 8px; margin-bottom: 12px; }
-  input[type=text] { flex: 1; background: var(--bg); border: 1px solid var(--done); color: var(--text); border-radius: 10px; padding: 10px 12px; font-size: 0.95rem; }
   button { font-family: inherit; }
-  ul { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px; overflow-y: auto; }
-  li { display: flex; align-items: center; gap: 10px; padding: 10px 12px; background: var(--bg); border-radius: 10px; }
+  .card {
+    background: var(--glass); backdrop-filter: blur(18px); -webkit-backdrop-filter: blur(18px);
+    border: 1px solid var(--border); border-radius: 20px; padding: 18px;
+    box-shadow: 0 8px 30px rgba(0,0,0,0.25); position: relative; overflow: hidden;
+  }
+  h2 { font-size: 0.85rem; font-weight: 600; color: var(--sub); margin: 0 0 10px; display: flex; align-items: center; gap: 8px; }
+
+  /* Spalten */
+  .col-left { flex: 0.9; display: flex; flex-direction: column; gap: 16px; min-width: 0; min-height: 0; }
+  .col-right { flex: 1.1; display: flex; flex-direction: column; min-width: 0; min-height: 0; }
+
+  /* Oben links: Uhrzeit/Datum/KW */
+  .time-card { flex: 0.55; display: flex; flex-direction: column; justify-content: center; gap: 4px; }
+  .time-card::after {
+    content: '🕐'; position: absolute; right: -10px; bottom: -30px; font-size: 9rem;
+    opacity: 0.06; filter: blur(0.5px);
+  }
+  .clock { font-family: 'Outfit', sans-serif; font-weight: 800; font-size: clamp(2rem, 7vw, 3.6rem); line-height: 1;
+    background: linear-gradient(120deg, #fff, var(--violet)); -webkit-background-clip: text; background-clip: text; color: transparent; }
+  .date { color: var(--sub); font-size: 1rem; margin-top: 2px; }
+  .kw { color: var(--sub); font-size: 0.85rem; font-weight: 600; }
+  .kw::before { content: '📅 '; }
+
+  /* Unten links: Wetter + Spotify nebeneinander */
+  .bottom-row { flex: 0.45; display: flex; flex-direction: row; gap: 16px; min-height: 0; }
+  .bottom-row .card { flex: 1; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; gap: 8px; min-width: 0; }
+
+  /* Wetter */
+  .weather-card::after {
+    content: '☁️'; position: absolute; left: -20px; top: -20px; font-size: 7rem; opacity: 0.08;
+  }
+  .weather-temp { font-family: 'Outfit', sans-serif; font-size: 2.2rem; font-weight: 700; }
+  .weather-desc { color: var(--sub); font-size: 0.8rem; }
+  .weather-minmax { color: var(--sub); font-size: 0.75rem; padding: 3px 10px; background: var(--weather-soft); border-radius: 20px; margin-top: 2px; }
+  .weather-icon { font-size: 2.4rem; filter: drop-shadow(0 4px 10px rgba(245,185,92,0.35)); }
+
+  /* Spotify (kompakt) */
+  .spotify-card::after {
+    content: '♫'; position: absolute; right: -15px; bottom: -35px; font-size: 8rem; opacity: 0.07; color: var(--green);
+  }
+  .art { width: 60px; height: 60px; border-radius: 12px; background: var(--glass-strong); object-fit: cover; flex-shrink: 0;
+    box-shadow: 0 0 0 3px var(--green-soft), 0 6px 16px rgba(29,185,84,0.25); }
+  .track { font-weight: 700; font-size: 0.85rem; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .artist { color: var(--sub); font-size: 0.75rem; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .progress-bar { width: 100%; height: 4px; background: rgba(255,255,255,0.12); border-radius: 3px; overflow: hidden; }
+  .progress-fill { height: 100%; width: 0%; background: var(--green); }
+  .controls { display: flex; align-items: center; gap: 12px; }
+  .ctrl-btn { background: var(--glass-strong); border: 1px solid var(--border); color: var(--text); border-radius: 50%; width: 34px; height: 34px; font-size: 0.85rem; cursor: pointer; }
+  .ctrl-btn.main { width: 42px; height: 42px; background: var(--green); border: none; font-size: 1rem; color: #08240f; }
+  .conn-note { font-size: 0.65rem; color: var(--sub); }
+  .link-btn { background: var(--violet); color: #fff; border: none; border-radius: 30px; padding: 9px 18px; font-size: 0.85rem; cursor: pointer; font-weight: 600; }
+  .settings { display: flex; flex-direction: column; gap: 8px; width: 95%; }
+  .settings label { font-size: 0.7rem; color: var(--sub); text-align: left; }
+  input[type=text] { background: rgba(0,0,0,0.2); border: 1px solid var(--border); color: var(--text); border-radius: 12px; padding: 9px 12px; font-size: 0.85rem; }
+
+  /* ToDo rechts, volle Höhe */
+  .todo-card { flex: 1; display: flex; flex-direction: column; min-height: 0; }
+  form { display: flex; gap: 8px; margin-bottom: 10px; }
+  form input[type=text] { flex: 1; }
+  ul { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px; overflow-y: auto; flex: 1; }
+  li { display: flex; align-items: center; gap: 10px; padding: 12px 14px; background: var(--glass-strong); border: 1px solid var(--border); border-radius: 14px; }
+  li.done { opacity: 0.6; }
   li.done .label { text-decoration: line-through; color: var(--sub); }
   .label { flex: 1; word-break: break-word; }
-  .check { width: 20px; height: 20px; border-radius: 50%; border: 2px solid var(--accent); cursor: pointer; flex-shrink: 0; background: none; }
-  li.done .check { background: var(--accent); }
-  .del { background: none; color: var(--sub); padding: 4px 8px; font-size: 1.1rem; }
-  .empty { color: var(--sub); font-size: 0.9rem; padding: 8px 0; }
-  .status { font-size: 0.75rem; color: var(--sub); text-align: right; min-height: 1em; }
-  .settings { display: flex; flex-direction: column; gap: 10px; width: 90%; }
-  .settings label { font-size: 0.75rem; color: var(--sub); text-align: left; }
+  .check { width: 22px; height: 22px; border-radius: 50%; border: 2px solid var(--violet); cursor: pointer; flex-shrink: 0; background: none; color: #fff; font-size: 0.7rem; display: flex; align-items: center; justify-content: center; }
+  li.done .check { background: var(--violet); }
+  li.done .check::after { content: '✓'; }
+  .del { background: none; color: var(--sub); border: none; padding: 4px 8px; font-size: 1.1rem; cursor: pointer; }
+  .empty { color: var(--sub); font-size: 0.9rem; padding: 30px 0; text-align: center; }
+  .empty .empty-icon { font-size: 2.2rem; display: block; margin-bottom: 8px; opacity: 0.7; }
+  .status { font-size: 0.72rem; color: var(--sub); text-align: right; min-height: 1em; }
 </style>
 </head>
 <body>
-  <div class="col col-left">
-    <div class="card spotify-card" id="spotifyCard">
-      <!-- Wird per JS befüllt: entweder Settings-Formular, Login-Button oder Player -->
+  <div class="col-left">
+    <div class="card time-card">
+      <div class="clock" id="clock">--:--</div>
+      <div class="date" id="date"></div>
+      <div class="kw" id="kw"></div>
+    </div>
+    <div class="bottom-row">
+      <div class="card weather-card" id="weatherCard"><div class="weather-desc">Wetter lädt…</div></div>
+      <div class="card spotify-card" id="spotifyCard"></div>
     </div>
   </div>
 
-  <div class="col col-right">
-    <div class="clock" id="clock">--:--</div>
-    <div class="date" id="date"></div>
-    <div class="card" style="flex:1; display:flex; flex-direction:column; min-height:0;">
-      <h2>To-Dos</h2>
+  <div class="col-right">
+    <div class="card todo-card">
+      <h2>📋 To-Dos</h2>
       <form id="form">
         <input type="text" id="newTodo" placeholder="Neue Aufgabe…" autocomplete="off">
         <button type="submit" class="link-btn">+</button>
       </form>
       <ul id="list"></ul>
-      <div class="empty" id="empty" style="display:none;">Keine offenen Aufgaben 🎉</div>
+      <div class="empty" id="empty" style="display:none;"><span class="empty-icon">✨</span>Keine offenen Aufgaben</div>
       <div class="status" id="status"></div>
       <div style="display:flex; gap:8px; margin-top:12px;">
-        <button type="button" id="exportBtn" style="background:var(--done); color:var(--text); border:none; border-radius:10px; flex:1; padding:8px;">Backup speichern</button>
-        <button type="button" id="importBtn" style="background:var(--done); color:var(--text); border:none; border-radius:10px; flex:1; padding:8px;">Backup laden</button>
+        <button type="button" id="exportBtn" style="background:rgba(255,255,255,0.1); border:1px solid var(--border); color:var(--text); border-radius:12px; flex:1; padding:9px; cursor:pointer;">Backup speichern</button>
+        <button type="button" id="importBtn" style="background:rgba(255,255,255,0.1); border:1px solid var(--border); color:var(--text); border-radius:12px; flex:1; padding:9px; cursor:pointer;">Backup laden</button>
         <input type="file" id="importFile" accept="application/json" style="display:none;">
       </div>
     </div>
   </div>
 
 <script>
-/* ---------------- Uhr ---------------- */
+/* ---------------- Uhrzeit / Datum / Kalenderwoche ---------------- */
+function isoWeek(d) {
+  const date = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
+  const day = date.getUTCDay() || 7;
+  date.setUTCDate(date.getUTCDate() + 4 - day);
+  const yearStart = new Date(Date.UTC(date.getUTCFullYear(), 0, 1));
+  return Math.ceil((((date - yearStart) / 86400000) + 1) / 7);
+}
 function tick() {
   const now = new Date();
   document.getElementById('clock').textContent = now.toLocaleTimeString('de-DE', {hour:'2-digit', minute:'2-digit'});
   document.getElementById('date').textContent = now.toLocaleDateString('de-DE', {weekday:'long', day:'numeric', month:'long'});
+  document.getElementById('kw').textContent = 'KW ' + isoWeek(now);
 }
 tick(); setInterval(tick, 30000);
+
+/* ---------------- Wetter (Open-Meteo, kein API-Key nötig) ---------------- */
+const WEATHER_LOC_KEY = 'dashboard_weather_loc_v1';
+const weatherCard = document.getElementById('weatherCard');
+const WMO = {
+  0:['Klar','☀️'],1:['Meist klar','🌤️'],2:['Teilw. bewölkt','⛅'],3:['Bewölkt','☁️'],
+  45:['Nebel','🌫️'],48:['Nebel','🌫️'],51:['Nieselregen','🌦️'],53:['Nieselregen','🌦️'],55:['Nieselregen','🌦️'],
+  61:['Regen','🌧️'],63:['Regen','🌧️'],65:['Starker Regen','🌧️'],71:['Schnee','❄️'],73:['Schnee','❄️'],75:['Starker Schnee','❄️'],
+  80:['Schauer','🌦️'],81:['Schauer','🌦️'],82:['Starke Schauer','🌦️'],95:['Gewitter','⛈️'],96:['Gewitter','⛈️'],99:['Gewitter','⛈️']
+};
+function wmoInfo(code) { return WMO[code] || ['–','—']; }
+
+function renderWeatherSettings() {
+  weatherCard.innerHTML = `
+    <div class="settings">
+      <label>Ort (Stadt)</label>
+      <input type="text" id="wCity" placeholder="z. B. Rottenburg am Neckar">
+      <button class="link-btn" id="wSave">Speichern</button>
+    </div>`;
+  document.getElementById('wSave').onclick = async () => {
+    const city = document.getElementById('wCity').value.trim();
+    if (!city) return;
+    weatherCard.innerHTML = '<div class="weather-desc">Suche Ort…</div>';
+    try {
+      const geo = await fetch('https://geocoding-api.open-meteo.com/v1/search?count=1&language=de&name=' + encodeURIComponent(city)).then(r => r.json());
+      const hit = geo.results?.[0];
+      if (!hit) { weatherCard.innerHTML = '<div class="weather-desc">Ort nicht gefunden</div>'; return; }
+      localStorage.setItem(WEATHER_LOC_KEY, JSON.stringify({ lat: hit.latitude, lon: hit.longitude, name: hit.name }));
+      loadWeather();
+    } catch (e) { weatherCard.innerHTML = '<div class="weather-desc">Fehler bei Ortssuche</div>'; }
+  };
+}
+
+async function loadWeather() {
+  let loc = null;
+  try { loc = JSON.parse(localStorage.getItem(WEATHER_LOC_KEY)); } catch (e) {}
+  if (!loc) {
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        pos => { fetchWeather(pos.coords.latitude, pos.coords.longitude, ''); },
+        () => renderWeatherSettings(),
+        { timeout: 5000 }
+      );
+    } else renderWeatherSettings();
+    return;
+  }
+  fetchWeather(loc.lat, loc.lon, loc.name);
+}
+
+async function fetchWeather(lat, lon, name) {
+  try {
+    const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,weather_code&daily=temperature_2m_max,temperature_2m_min&timezone=auto`;
+    const data = await fetch(url).then(r => r.json());
+    const code = data.current.weather_code;
+    const [desc, icon] = wmoInfo(code);
+    const accent = code === 0 || code === 1 ? '#f5b95c' : (code >= 61 && code <= 82) ? '#5bb8ff' : (code >= 71 && code <= 75) ? '#8fd8ff' : '#a6acc4';
+    weatherCard.style.setProperty('--weather-accent', accent);
+    weatherCard.style.setProperty('--weather-soft', accent + '33');
+    weatherCard.innerHTML = `
+      <div class="weather-icon">${icon}</div>
+      <div class="weather-temp">${Math.round(data.current.temperature_2m)}°C</div>
+      <div class="weather-desc">${desc}${name ? ' · ' + name : ''}</div>
+      <div class="weather-minmax">↓${Math.round(data.daily.temperature_2m_min[0])}° / ↑${Math.round(data.daily.temperature_2m_max[0])}°</div>
+      <button class="link-btn" id="wChange" style="background:rgba(255,255,255,0.12); font-size:0.65rem; padding:6px 12px; margin-top:2px;">Ort ändern</button>`;
+    document.getElementById('wChange').onclick = renderWeatherSettings;
+  } catch (e) {
+    weatherCard.innerHTML = '<div class="weather-desc">Wetter nicht verfügbar</div>';
+  }
+}
+loadWeather();
+setInterval(loadWeather, 15 * 60 * 1000);
 
 /* ---------------- To-Dos (lokal im Browser, localStorage) ---------------- */
 const STORAGE_KEY = 'mini_dashboard_todos_v1';
 let todos = [];
 try { todos = JSON.parse(localStorage.getItem(STORAGE_KEY)) || []; } catch (e) { todos = []; }
-
 const list = document.getElementById('list');
 const empty = document.getElementById('empty');
 const statusEl = document.getElementById('status');
@@ -118,28 +251,20 @@ function render() {
     list.appendChild(li);
   });
 }
-
 function save() {
-  try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(todos));
-    statusEl.textContent = 'Lokal gespeichert';
-  } catch (e) {
-    statusEl.textContent = 'Konnte nicht speichern';
-  }
+  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(todos)); statusEl.textContent = 'Lokal gespeichert'; }
+  catch (e) { statusEl.textContent = 'Konnte nicht speichern'; }
   clearTimeout(save._t);
   save._t = setTimeout(() => { statusEl.textContent = ''; }, 1500);
 }
-
 document.getElementById('form').addEventListener('submit', e => {
   e.preventDefault();
   const input = document.getElementById('newTodo');
   const text = input.value.trim();
   if (!text) return;
   todos.push({ id: Date.now() + '-' + Math.random().toString(36).slice(2,7), text, done: false });
-  input.value = '';
-  render(); save();
+  input.value = ''; render(); save();
 });
-
 document.getElementById('exportBtn').addEventListener('click', () => {
   const blob = new Blob([JSON.stringify(todos, null, 2)], { type: 'application/json' });
   const url = URL.createObjectURL(blob);
@@ -152,16 +277,14 @@ document.getElementById('importFile').addEventListener('change', (e) => {
   const file = e.target.files[0]; if (!file) return;
   const reader = new FileReader();
   reader.onload = () => {
-    try {
-      const loaded = JSON.parse(reader.result);
-      if (Array.isArray(loaded)) { todos = loaded; render(); save(); }
-    } catch (err) { statusEl.textContent = 'Ungültige Datei'; }
+    try { const loaded = JSON.parse(reader.result); if (Array.isArray(loaded)) { todos = loaded; render(); save(); } }
+    catch (err) { statusEl.textContent = 'Ungültige Datei'; }
   };
   reader.readAsText(file); e.target.value = '';
 });
 render();
 
-/* ---------------- Spotify: echte Steuerung via PKCE OAuth ---------------- */
+/* ---------------- Spotify: echte Steuerung via PKCE OAuth (kompakt) ---------------- */
 const CFG_KEY = 'spotify_pkce_config_v1';
 const TOKEN_KEY = 'spotify_pkce_tokens_v1';
 const SCOPES = 'user-read-currently-playing user-read-playback-state user-modify-playback-state';
@@ -174,16 +297,14 @@ function setTokens(t) { localStorage.setItem(TOKEN_KEY, JSON.stringify(t)); }
 
 function randomString(len) {
   const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-  let out = '';
-  const arr = crypto.getRandomValues(new Uint8Array(len));
+  let out = ''; const arr = crypto.getRandomValues(new Uint8Array(len));
   for (let i = 0; i < len; i++) out += chars[arr[i] % chars.length];
   return out;
 }
 async function sha256base64url(str) {
   const data = new TextEncoder().encode(str);
   const digest = await crypto.subtle.digest('SHA-256', data);
-  return btoa(String.fromCharCode(...new Uint8Array(digest)))
-    .replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+  return btoa(String.fromCharCode(...new Uint8Array(digest))).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
 }
 
 function renderSettingsForm() {
@@ -191,10 +312,9 @@ function renderSettingsForm() {
     <div class="settings">
       <label>Spotify Client ID</label>
       <input type="text" id="cfgClientId" placeholder="z. B. 1a2b3c4d...">
-      <label>Redirect URI (muss exakt bei Spotify hinterlegt sein)</label>
-      <input type="text" id="cfgRedirect" placeholder="https://dein-user.github.io/repo/" value="${location.origin + location.pathname}">
+      <label>Redirect URI</label>
+      <input type="text" id="cfgRedirect" value="${location.origin + location.pathname}">
       <button class="link-btn" id="cfgSave">Speichern</button>
-      <div class="conn-note">Einmalig einrichten. Beides findest du im Spotify Developer Dashboard.</div>
     </div>`;
   document.getElementById('cfgSave').onclick = () => {
     const clientId = document.getElementById('cfgClientId').value.trim();
@@ -204,15 +324,11 @@ function renderSettingsForm() {
     renderLoginButton();
   };
 }
-
 function renderLoginButton() {
-  card.innerHTML = `<div class="art"></div><div class="track">Nicht verbunden</div>
-    <button class="link-btn" id="loginBtn">Mit Spotify verbinden</button>
-    <button class="link-btn" id="resetCfgBtn" style="background:var(--done);">Einstellungen ändern</button>`;
+  card.innerHTML = `<div class="track">Nicht verbunden</div>
+    <button class="link-btn" id="loginBtn">Mit Spotify verbinden</button>`;
   document.getElementById('loginBtn').onclick = startLogin;
-  document.getElementById('resetCfgBtn').onclick = () => { localStorage.removeItem(CFG_KEY); renderSettingsForm(); };
 }
-
 async function startLogin() {
   const cfg = getConfig();
   const verifier = randomString(64);
@@ -226,51 +342,38 @@ async function startLogin() {
   });
   location.href = 'https://accounts.spotify.com/authorize?' + params.toString();
 }
-
 async function exchangeCode(code) {
   const cfg = getConfig();
   const verifier = sessionStorage.getItem('sp_verifier');
-  const body = new URLSearchParams({
-    grant_type: 'authorization_code', code, redirect_uri: cfg.redirect,
-    client_id: cfg.clientId, code_verifier: verifier
-  });
-  const res = await fetch('https://accounts.spotify.com/api/token', {
-    method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body
-  });
+  const body = new URLSearchParams({ grant_type: 'authorization_code', code, redirect_uri: cfg.redirect, client_id: cfg.clientId, code_verifier: verifier });
+  const res = await fetch('https://accounts.spotify.com/api/token', { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body });
   if (!res.ok) throw new Error('token exchange failed');
   const data = await res.json();
   setTokens({ access_token: data.access_token, refresh_token: data.refresh_token, expires_at: Date.now() + data.expires_in * 1000 });
 }
-
 async function refreshTokenIfNeeded() {
-  const t = getTokens();
-  if (!t) return null;
+  const t = getTokens(); if (!t) return null;
   if (Date.now() < t.expires_at - 30000) return t;
   const cfg = getConfig();
   const body = new URLSearchParams({ grant_type: 'refresh_token', refresh_token: t.refresh_token, client_id: cfg.clientId });
-  const res = await fetch('https://accounts.spotify.com/api/token', {
-    method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body
-  });
+  const res = await fetch('https://accounts.spotify.com/api/token', { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body });
   if (!res.ok) return null;
   const data = await res.json();
   const newTokens = { access_token: data.access_token, refresh_token: data.refresh_token || t.refresh_token, expires_at: Date.now() + data.expires_in * 1000 };
-  setTokens(newTokens);
-  return newTokens;
+  setTokens(newTokens); return newTokens;
 }
-
-function fmtTime(ms) {
-  const s = Math.floor(ms / 1000);
-  return Math.floor(s / 60) + ':' + String(s % 60).padStart(2, '0');
-}
+function fmtTime(ms) { const s = Math.floor(ms / 1000); return Math.floor(s / 60) + ':' + String(s % 60).padStart(2, '0'); }
 
 function renderPlayer() {
   card.innerHTML = `
-    <img class="art" id="art" alt="Cover">
-    <div><div class="track" id="track">Lädt…</div><div class="artist" id="artist"></div></div>
-    <div class="progress-wrap">
-      <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
-      <div class="progress-times"><span id="posTime">0:00</span><span id="durTime">0:00</span></div>
+    <div style="display:flex; gap:10px; align-items:center; width:100%;">
+      <img class="art" id="art" alt="Cover">
+      <div style="min-width:0; flex:1; text-align:left;">
+        <div class="track" id="track">Lädt…</div>
+        <div class="artist" id="artist"></div>
+      </div>
     </div>
+    <div class="progress-bar" style="width:100%;"><div class="progress-fill" id="progressFill"></div></div>
     <div class="controls">
       <button class="ctrl-btn" id="prevBtn">⏮</button>
       <button class="ctrl-btn main" id="playBtn">▶</button>
@@ -285,18 +388,13 @@ function renderPlayer() {
     pollNow();
   };
 }
-
 async function spotifyApi(path, method) {
-  const t = await refreshTokenIfNeeded();
-  if (!t) return null;
-  const res = await fetch('https://api.spotify.com/v1' + path, {
-    method, headers: { 'Authorization': 'Bearer ' + t.access_token }
-  });
+  const t = await refreshTokenIfNeeded(); if (!t) return null;
+  const res = await fetch('https://api.spotify.com/v1' + path, { method, headers: { 'Authorization': 'Bearer ' + t.access_token } });
   if (res.status === 204 || res.status === 202) return null;
-  if (!res.ok) { document.getElementById('connNote').textContent = 'Fehler: ' + res.status; return null; }
+  if (!res.ok) { const n = document.getElementById('connNote'); if (n) n.textContent = 'Fehler: ' + res.status; return null; }
   try { return await res.json(); } catch (e) { return null; }
 }
-
 async function pollNow() {
   const data = await spotifyApi('/me/player/currently-playing', 'GET');
   const noteEl = document.getElementById('connNote');
@@ -304,12 +402,10 @@ async function pollNow() {
   const artistEl = document.getElementById('artist');
   const artEl = document.getElementById('art');
   const fillEl = document.getElementById('progressFill');
-  const posEl = document.getElementById('posTime');
-  const durEl = document.getElementById('durTime');
   const playBtn = document.getElementById('playBtn');
   if (!data || !data.item) {
-    trackEl.textContent = 'Nichts aktuell'; artistEl.textContent = '';
-    if (noteEl) noteEl.textContent = 'Öffne Spotify auf einem Gerät, damit Steuerung funktioniert.';
+    if (trackEl) trackEl.textContent = 'Nichts aktuell'; if (artistEl) artistEl.textContent = '';
+    if (noteEl) noteEl.textContent = 'Spotify irgendwo öffnen';
     return;
   }
   trackEl.textContent = data.item.name || '–';
@@ -318,36 +414,25 @@ async function pollNow() {
   if (img) artEl.src = img;
   const dur = data.item.duration_ms || 0, pos = data.progress_ms || 0;
   fillEl.style.width = dur ? Math.min(100, (pos / dur) * 100) + '%' : '0%';
-  posEl.textContent = fmtTime(pos); durEl.textContent = fmtTime(dur);
   playBtn.textContent = data.is_playing ? '⏸' : '▶';
   playBtn.dataset.playing = data.is_playing ? '1' : '0';
   noteEl.textContent = '';
 }
-
 async function initSpotify() {
   const url = new URL(location.href);
   const code = url.searchParams.get('code');
   const state = url.searchParams.get('state');
   if (code && state && state === sessionStorage.getItem('sp_state')) {
-    renderPlayer();
-    document.getElementById('track').textContent = 'Verbinde…';
-    try {
-      await exchangeCode(code);
-      history.replaceState({}, '', location.pathname);
-      pollNow();
-      setInterval(pollNow, 5000);
-    } catch (e) {
-      renderLoginButton();
-    }
+    renderPlayer(); document.getElementById('track').textContent = 'Verbinde…';
+    try { await exchangeCode(code); history.replaceState({}, '', location.pathname); pollNow(); setInterval(pollNow, 5000); }
+    catch (e) { renderLoginButton(); }
     return;
   }
   const cfg = getConfig();
   if (!cfg) { renderSettingsForm(); return; }
   const t = getTokens();
   if (!t) { renderLoginButton(); return; }
-  renderPlayer();
-  pollNow();
-  setInterval(pollNow, 5000);
+  renderPlayer(); pollNow(); setInterval(pollNow, 5000);
 }
 initSpotify();
 </script>
