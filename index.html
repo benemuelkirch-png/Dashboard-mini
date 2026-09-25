@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Mini-Dashboard</title>
+<style>
+  :root {
+    --bg:#14161c; --card:#1e212b; --text:#eef0f4; --sub:#9aa1b1;
+    --accent:#7c9fff; --done:#4a5064;
+  }
+  * { box-sizing: border-box; }
+  html, body { height: 100%; margin: 0; }
+  body {
+    background: var(--bg); color: var(--text);
+    font-family: -apple-system, 'Segoe UI', Roboto, sans-serif;
+    padding: 20px; display: flex; flex-direction: row; gap: 20px; overflow: hidden;
+  }
+  .col { display: flex; flex-direction: column; gap: 16px; min-width: 0; min-height: 0; }
+  .col-left { flex: 1.1; }
+  .col-right { flex: 1; min-height: 0; }
+  .clock { font-size: clamp(1.2rem, 3.5vw, 2rem); font-weight: 600; }
+  .date { color: var(--sub); font-size: 0.85rem; margin-top: -10px; }
+  .card { background: var(--card); border-radius: 16px; padding: 16px; }
+  .spotify-card { flex: 1; display: flex; flex-direction: column; justify-content: center; align-items: center; gap: 16px; text-align: center; }
+  .art { width: min(45vh, 220px); height: min(45vh, 220px); border-radius: 12px; background: var(--bg); object-fit: cover; }
+  .track { font-weight: 700; font-size: 1.1rem; max-width: 90%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .artist { color: var(--sub); font-size: 0.9rem; }
+  .progress-wrap { width: 85%; }
+  .progress-bar { width: 100%; height: 5px; background: var(--done); border-radius: 3px; overflow: hidden; }
+  .progress-fill { height: 100%; width: 0%; background: var(--accent); }
+  .progress-times { display: flex; justify-content: space-between; font-size: 0.75rem; color: var(--sub); margin-top: 4px; }
+  .controls { display: flex; align-items: center; gap: 18px; }
+  .ctrl-btn { background: var(--bg); color: var(--text); border: none; border-radius: 50%; width: 46px; height: 46px; font-size: 1.1rem; cursor: pointer; }
+  .ctrl-btn.main { width: 58px; height: 58px; background: var(--accent); font-size: 1.3rem; }
+  .ctrl-btn[disabled] { opacity: 0.35; cursor: not-allowed; }
+  .conn-note { font-size: 0.72rem; color: var(--sub); }
+  .link-btn { background: var(--accent); color: #fff; border: none; border-radius: 10px; padding: 10px 16px; font-size: 0.9rem; cursor: pointer; }
+  h2 { font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--sub); margin: 0 0 10px; }
+  form { display: flex; gap: 8px; margin-bottom: 12px; }
+  input[type=text] { flex: 1; background: var(--bg); border: 1px solid var(--done); color: var(--text); border-radius: 10px; padding: 10px 12px; font-size: 0.95rem; }
+  button { font-family: inherit; }
+  ul { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px; overflow-y: auto; }
+  li { display: flex; align-items: center; gap: 10px; padding: 10px 12px; background: var(--bg); border-radius: 10px; }
+  li.done .label { text-decoration: line-through; color: var(--sub); }
+  .label { flex: 1; word-break: break-word; }
+  .check { width: 20px; height: 20px; border-radius: 50%; border: 2px solid var(--accent); cursor: pointer; flex-shrink: 0; background: none; }
+  li.done .check { background: var(--accent); }
+  .del { background: none; color: var(--sub); padding: 4px 8px; font-size: 1.1rem; }
+  .empty { color: var(--sub); font-size: 0.9rem; padding: 8px 0; }
+  .status { font-size: 0.75rem; color: var(--sub); text-align: right; min-height: 1em; }
+  .settings { display: flex; flex-direction: column; gap: 10px; width: 90%; }
+  .settings label { font-size: 0.75rem; color: var(--sub); text-align: left; }
+</style>
+</head>
+<body>
+  <div class="col col-left">
+    <div class="card spotify-card" id="spotifyCard">
+      <!-- Wird per JS befüllt: entweder Settings-Formular, Login-Button oder Player -->
+    </div>
+  </div>
+
+  <div class="col col-right">
+    <div class="clock" id="clock">--:--</div>
+    <div class="date" id="date"></div>
+    <div class="card" style="flex:1; display:flex; flex-direction:column; min-height:0;">
+      <h2>To-Dos</h2>
+      <form id="form">
+        <input type="text" id="newTodo" placeholder="Neue Aufgabe…" autocomplete="off">
+        <button type="submit" class="link-btn">+</button>
+      </form>
+      <ul id="list"></ul>
+      <div class="empty" id="empty" style="display:none;">Keine offenen Aufgaben 🎉</div>
+      <div class="status" id="status"></div>
+      <div style="display:flex; gap:8px; margin-top:12px;">
+        <button type="button" id="exportBtn" style="background:var(--done); color:var(--text); border:none; border-radius:10px; flex:1; padding:8px;">Backup speichern</button>
+        <button type="button" id="importBtn" style="background:var(--done); color:var(--text); border:none; border-radius:10px; flex:1; padding:8px;">Backup laden</button>
+        <input type="file" id="importFile" accept="application/json" style="display:none;">
+      </div>
+    </div>
+  </div>
+
+<script>
+/* ---------------- Uhr ---------------- */
+function tick() {
+  const now = new Date();
+  document.getElementById('clock').textContent = now.toLocaleTimeString('de-DE', {hour:'2-digit', minute:'2-digit'});
+  document.getElementById('date').textContent = now.toLocaleDateString('de-DE', {weekday:'long', day:'numeric', month:'long'});
+}
+tick(); setInterval(tick, 30000);
+
+/* ---------------- To-Dos (lokal im Browser, localStorage) ---------------- */
+const STORAGE_KEY = 'mini_dashboard_todos_v1';
+let todos = [];
+try { todos = JSON.parse(localStorage.getItem(STORAGE_KEY)) || []; } catch (e) { todos = []; }
+
+const list = document.getElementById('list');
+const empty = document.getElementById('empty');
+const statusEl = document.getElementById('status');
+
+function render() {
+  list.innerHTML = '';
+  empty.style.display = todos.length ? 'none' : 'block';
+  todos.forEach(t => {
+    const li = document.createElement('li');
+    if (t.done) li.classList.add('done');
+    const check = document.createElement('button');
+    check.className = 'check';
+    check.onclick = () => { t.done = !t.done; render(); save(); };
+    const label = document.createElement('div');
+    label.className = 'label';
+    label.textContent = t.text;
+    const del = document.createElement('button');
+    del.className = 'del';
+    del.textContent = '✕';
+    del.onclick = () => { todos = todos.filter(x => x.id !== t.id); render(); save(); };
+    li.append(check, label, del);
+    list.appendChild(li);
+  });
+}
+
+function save() {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(todos));
+    statusEl.textContent = 'Lokal gespeichert';
+  } catch (e) {
+    statusEl.textContent = 'Konnte nicht speichern';
+  }
+  clearTimeout(save._t);
+  save._t = setTimeout(() => { statusEl.textContent = ''; }, 1500);
+}
+
+document.getElementById('form').addEventListener('submit', e => {
+  e.preventDefault();
+  const input = document.getElementById('newTodo');
+  const text = input.value.trim();
+  if (!text) return;
+  todos.push({ id: Date.now() + '-' + Math.random().toString(36).slice(2,7), text, done: false });
+  input.value = '';
+  render(); save();
+});
+
+document.getElementById('exportBtn').addEventListener('click', () => {
+  const blob = new Blob([JSON.stringify(todos, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = 'dashboard-todos-' + new Date().toISOString().slice(0,10) + '.json';
+  a.click(); URL.revokeObjectURL(url);
+});
+document.getElementById('importBtn').addEventListener('click', () => document.getElementById('importFile').click());
+document.getElementById('importFile').addEventListener('change', (e) => {
+  const file = e.target.files[0]; if (!file) return;
+  const reader = new FileReader();
+  reader.onload = () => {
+    try {
+      const loaded = JSON.parse(reader.result);
+      if (Array.isArray(loaded)) { todos = loaded; render(); save(); }
+    } catch (err) { statusEl.textContent = 'Ungültige Datei'; }
+  };
+  reader.readAsText(file); e.target.value = '';
+});
+render();
+
+/* ---------------- Spotify: echte Steuerung via PKCE OAuth ---------------- */
+const CFG_KEY = 'spotify_pkce_config_v1';
+const TOKEN_KEY = 'spotify_pkce_tokens_v1';
+const SCOPES = 'user-read-currently-playing user-read-playback-state user-modify-playback-state';
+const card = document.getElementById('spotifyCard');
+
+function getConfig() { try { return JSON.parse(localStorage.getItem(CFG_KEY)) || null; } catch (e) { return null; } }
+function setConfig(cfg) { localStorage.setItem(CFG_KEY, JSON.stringify(cfg)); }
+function getTokens() { try { return JSON.parse(localStorage.getItem(TOKEN_KEY)) || null; } catch (e) { return null; } }
+function setTokens(t) { localStorage.setItem(TOKEN_KEY, JSON.stringify(t)); }
+
+function randomString(len) {
+  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+  let out = '';
+  const arr = crypto.getRandomValues(new Uint8Array(len));
+  for (let i = 0; i < len; i++) out += chars[arr[i] % chars.length];
+  return out;
+}
+async function sha256base64url(str) {
+  const data = new TextEncoder().encode(str);
+  const digest = await crypto.subtle.digest('SHA-256', data);
+  return btoa(String.fromCharCode(...new Uint8Array(digest)))
+    .replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+}
+
+function renderSettingsForm() {
+  card.innerHTML = `
+    <div class="settings">
+      <label>Spotify Client ID</label>
+      <input type="text" id="cfgClientId" placeholder="z. B. 1a2b3c4d...">
+      <label>Redirect URI (muss exakt bei Spotify hinterlegt sein)</label>
+      <input type="text" id="cfgRedirect" placeholder="https://dein-user.github.io/repo/" value="${location.origin + location.pathname}">
+      <button class="link-btn" id="cfgSave">Speichern</button>
+      <div class="conn-note">Einmalig einrichten. Beides findest du im Spotify Developer Dashboard.</div>
+    </div>`;
+  document.getElementById('cfgSave').onclick = () => {
+    const clientId = document.getElementById('cfgClientId').value.trim();
+    const redirect = document.getElementById('cfgRedirect').value.trim();
+    if (!clientId || !redirect) return;
+    setConfig({ clientId, redirect });
+    renderLoginButton();
+  };
+}
+
+function renderLoginButton() {
+  card.innerHTML = `<div class="art"></div><div class="track">Nicht verbunden</div>
+    <button class="link-btn" id="loginBtn">Mit Spotify verbinden</button>
+    <button class="link-btn" id="resetCfgBtn" style="background:var(--done);">Einstellungen ändern</button>`;
+  document.getElementById('loginBtn').onclick = startLogin;
+  document.getElementById('resetCfgBtn').onclick = () => { localStorage.removeItem(CFG_KEY); renderSettingsForm(); };
+}
+
+async function startLogin() {
+  const cfg = getConfig();
+  const verifier = randomString(64);
+  const challenge = await sha256base64url(verifier);
+  const state = randomString(16);
+  sessionStorage.setItem('sp_verifier', verifier);
+  sessionStorage.setItem('sp_state', state);
+  const params = new URLSearchParams({
+    client_id: cfg.clientId, response_type: 'code', redirect_uri: cfg.redirect,
+    code_challenge_method: 'S256', code_challenge: challenge, scope: SCOPES, state
+  });
+  location.href = 'https://accounts.spotify.com/authorize?' + params.toString();
+}
+
+async function exchangeCode(code) {
+  const cfg = getConfig();
+  const verifier = sessionStorage.getItem('sp_verifier');
+  const body = new URLSearchParams({
+    grant_type: 'authorization_code', code, redirect_uri: cfg.redirect,
+    client_id: cfg.clientId, code_verifier: verifier
+  });
+  const res = await fetch('https://accounts.spotify.com/api/token', {
+    method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body
+  });
+  if (!res.ok) throw new Error('token exchange failed');
+  const data = await res.json();
+  setTokens({ access_token: data.access_token, refresh_token: data.refresh_token, expires_at: Date.now() + data.expires_in * 1000 });
+}
+
+async function refreshTokenIfNeeded() {
+  const t = getTokens();
+  if (!t) return null;
+  if (Date.now() < t.expires_at - 30000) return t;
+  const cfg = getConfig();
+  const body = new URLSearchParams({ grant_type: 'refresh_token', refresh_token: t.refresh_token, client_id: cfg.clientId });
+  const res = await fetch('https://accounts.spotify.com/api/token', {
+    method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body
+  });
+  if (!res.ok) return null;
+  const data = await res.json();
+  const newTokens = { access_token: data.access_token, refresh_token: data.refresh_token || t.refresh_token, expires_at: Date.now() + data.expires_in * 1000 };
+  setTokens(newTokens);
+  return newTokens;
+}
+
+function fmtTime(ms) {
+  const s = Math.floor(ms / 1000);
+  return Math.floor(s / 60) + ':' + String(s % 60).padStart(2, '0');
+}
+
+function renderPlayer() {
+  card.innerHTML = `
+    <img class="art" id="art" alt="Cover">
+    <div><div class="track" id="track">Lädt…</div><div class="artist" id="artist"></div></div>
+    <div class="progress-wrap">
+      <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+      <div class="progress-times"><span id="posTime">0:00</span><span id="durTime">0:00</span></div>
+    </div>
+    <div class="controls">
+      <button class="ctrl-btn" id="prevBtn">⏮</button>
+      <button class="ctrl-btn main" id="playBtn">▶</button>
+      <button class="ctrl-btn" id="nextBtn">⏭</button>
+    </div>
+    <div class="conn-note" id="connNote"></div>`;
+  document.getElementById('prevBtn').onclick = () => spotifyApi('/me/player/previous', 'POST');
+  document.getElementById('nextBtn').onclick = () => spotifyApi('/me/player/next', 'POST');
+  document.getElementById('playBtn').onclick = async () => {
+    const playing = document.getElementById('playBtn').dataset.playing === '1';
+    await spotifyApi(playing ? '/me/player/pause' : '/me/player/play', 'PUT');
+    pollNow();
+  };
+}
+
+async function spotifyApi(path, method) {
+  const t = await refreshTokenIfNeeded();
+  if (!t) return null;
+  const res = await fetch('https://api.spotify.com/v1' + path, {
+    method, headers: { 'Authorization': 'Bearer ' + t.access_token }
+  });
+  if (res.status === 204 || res.status === 202) return null;
+  if (!res.ok) { document.getElementById('connNote').textContent = 'Fehler: ' + res.status; return null; }
+  try { return await res.json(); } catch (e) { return null; }
+}
+
+async function pollNow() {
+  const data = await spotifyApi('/me/player/currently-playing', 'GET');
+  const noteEl = document.getElementById('connNote');
+  const trackEl = document.getElementById('track');
+  const artistEl = document.getElementById('artist');
+  const artEl = document.getElementById('art');
+  const fillEl = document.getElementById('progressFill');
+  const posEl = document.getElementById('posTime');
+  const durEl = document.getElementById('durTime');
+  const playBtn = document.getElementById('playBtn');
+  if (!data || !data.item) {
+    trackEl.textContent = 'Nichts aktuell'; artistEl.textContent = '';
+    if (noteEl) noteEl.textContent = 'Öffne Spotify auf einem Gerät, damit Steuerung funktioniert.';
+    return;
+  }
+  trackEl.textContent = data.item.name || '–';
+  artistEl.textContent = (data.item.artists || []).map(a => a.name).join(', ');
+  const img = data.item.album?.images?.[0]?.url;
+  if (img) artEl.src = img;
+  const dur = data.item.duration_ms || 0, pos = data.progress_ms || 0;
+  fillEl.style.width = dur ? Math.min(100, (pos / dur) * 100) + '%' : '0%';
+  posEl.textContent = fmtTime(pos); durEl.textContent = fmtTime(dur);
+  playBtn.textContent = data.is_playing ? '⏸' : '▶';
+  playBtn.dataset.playing = data.is_playing ? '1' : '0';
+  noteEl.textContent = '';
+}
+
+async function initSpotify() {
+  const url = new URL(location.href);
+  const code = url.searchParams.get('code');
+  const state = url.searchParams.get('state');
+  if (code && state && state === sessionStorage.getItem('sp_state')) {
+    renderPlayer();
+    document.getElementById('track').textContent = 'Verbinde…';
+    try {
+      await exchangeCode(code);
+      history.replaceState({}, '', location.pathname);
+      pollNow();
+      setInterval(pollNow, 5000);
+    } catch (e) {
+      renderLoginButton();
+    }
+    return;
+  }
+  const cfg = getConfig();
+  if (!cfg) { renderSettingsForm(); return; }
+  const t = getTokens();
+  if (!t) { renderLoginButton(); return; }
+  renderPlayer();
+  pollNow();
+  setInterval(pollNow, 5000);
+}
+initSpotify();
+</script>
+</body>
+</html>
