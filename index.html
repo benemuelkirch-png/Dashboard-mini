@@ -463,8 +463,9 @@ function renderPlayer() {
     const btn = e.currentTarget;
     const trackId = btn.dataset.trackId;
     if (!trackId) return;
+    const uri = 'spotify:track:' + trackId;
     const liked = btn.classList.contains('liked');
-    await spotifyApi('/me/tracks?ids=' + trackId, liked ? 'DELETE' : 'PUT');
+    await spotifyApi('/me/library?uris=' + encodeURIComponent(uri), liked ? 'DELETE' : 'PUT');
     btn.classList.toggle('liked');
     btn.textContent = liked ? '♡' : '♥';
   };
@@ -504,8 +505,10 @@ async function pollNow() {
     lastTrackId = data.item.id;
     heartBtn.dataset.trackId = data.item.id;
     heartBtn.classList.remove('liked'); heartBtn.textContent = '♡';
-    const contains = await spotifyApi('/me/tracks/contains?ids=' + data.item.id, 'GET');
-    if (contains && contains[0]) { heartBtn.classList.add('liked'); heartBtn.textContent = '♥'; }
+    const uri = 'spotify:track:' + data.item.id;
+    const contains = await spotifyApi('/me/library/contains?uris=' + encodeURIComponent(uri), 'GET');
+    const isLiked = Array.isArray(contains) ? contains[0] : (contains ? contains[uri] : false);
+    if (isLiked) { heartBtn.classList.add('liked'); heartBtn.textContent = '♥'; }
   }
 }
 async function initSpotify() {
