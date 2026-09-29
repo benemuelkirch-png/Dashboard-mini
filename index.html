@@ -405,7 +405,7 @@ async function startLogin() {
   sessionStorage.setItem('sp_state', state);
   const params = new URLSearchParams({
     client_id: cfg.clientId, response_type: 'code', redirect_uri: cfg.redirect,
-    code_challenge_method: 'S256', code_challenge: challenge, scope: SCOPES, state
+    code_challenge_method: 'S256', code_challenge: challenge, scope: SCOPES, state, show_dialog: 'true'
   });
   location.href = 'https://accounts.spotify.com/authorize?' + params.toString();
 }
@@ -416,7 +416,8 @@ async function exchangeCode(code) {
   const res = await fetch('https://accounts.spotify.com/api/token', { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body });
   if (!res.ok) throw new Error('token exchange failed');
   const data = await res.json();
-  setTokens({ access_token: data.access_token, refresh_token: data.refresh_token, expires_at: Date.now() + data.expires_in * 1000 });
+  setTokens({ access_token: data.access_token, refresh_token: data.refresh_token, expires_at: Date.now() + data.expires_in * 1000, scope: data.scope });
+  return data.scope;
 }
 async function refreshTokenIfNeeded() {
   const t = getTokens(); if (!t) return null;
@@ -445,7 +446,12 @@ function renderPlayer() {
       <button class="ctrl-btn" id="nextBtn">⏭</button>
       <button class="ctrl-btn heart" id="heartBtn" title="Zu Favoriten hinzufügen">♡</button>
     </div>
-    <div class="conn-note" id="connNote"></div>`;
+    <div class="conn-note" id="connNote"></div>
+    <button class="link-btn" id="reconnectBtn" style="background:none; color:var(--sub); font-size:0.65rem; padding:2px 6px; text-decoration:underline;">Neu verbinden</button>`;
+  document.getElementById('reconnectBtn').onclick = () => {
+    localStorage.removeItem(TOKEN_KEY);
+    startLogin();
+  };
   document.getElementById('prevBtn').onclick = () => spotifyApi('/me/player/previous', 'POST');
   document.getElementById('nextBtn').onclick = () => spotifyApi('/me/player/next', 'POST');
   document.getElementById('playBtn').onclick = async () => {
@@ -508,8 +514,19 @@ async function initSpotify() {
   const state = url.searchParams.get('state');
   if (code && state && state === sessionStorage.getItem('sp_state')) {
     renderPlayer(); document.getElementById('track').textContent = 'Verbinde…';
-    try { await exchangeCode(code); history.replaceState({}, '', location.pathname); pollNow(); setInterval(pollNow, 5000); }
-    catch (e) { renderLoginButton(); }
+    try {
+      const grantedScope = await exchangeCode(code);
+      history.replaceState({}, '', location.pathname);
+      const hasLibrary = grantedScope && grantedScope.includes('user-library-modify');
+      pollNow();
+      setInterval(pollNow, 5000);
+      if (!hasLibrary) {
+        setTimeout(() => {
+          const n = document.getElementById('connNote');
+          if (n) n.textContent = '⚠️ Favoriten-Berechtigung fehlt weiterhin';
+        }, 1500);
+      }
+    } catch (e) { renderLoginButton(); }
     return;
   }
   const cfg = getConfig();
