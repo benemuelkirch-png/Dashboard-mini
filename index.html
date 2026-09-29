@@ -6,16 +6,40 @@
 <title>Mini-Dashboard</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;800&family=Orbitron:wght@600;700;800&display=swap" rel="stylesheet">
 <style>
   :root {
     --bg-a:#161033; --bg-b:#0c2b40;
+    --blob1: rgba(139,123,255,0.35); --blob2: rgba(29,185,84,0.18); --blob3: rgba(245,185,92,0.16);
     --glass: rgba(255,255,255,0.06); --glass-strong: rgba(255,255,255,0.1);
     --border: rgba(255,255,255,0.14);
     --text:#f2f3f9; --sub:#a6acc4;
     --violet:#8b7bff; --violet-soft: rgba(139,123,255,0.25);
     --green:#1db954; --green-soft: rgba(29,185,84,0.22);
     --weather-accent:#f5b95c; --weather-soft: rgba(245,185,92,0.22);
+    --number-font: 'Outfit', sans-serif;
+    --radius: 20px;
+  }
+  body[data-theme="starwars"] {
+    --bg-a:#08090b; --bg-b:#120e08;
+    --blob1: rgba(232,179,76,0.22); --blob2: rgba(90,140,200,0.10); --blob3: rgba(232,179,76,0.08);
+    --glass: rgba(255,255,255,0.035); --glass-strong: rgba(255,255,255,0.07);
+    --border: rgba(232,179,76,0.22);
+    --text:#f3ede0; --sub:#9a9488;
+    --violet:#e8b34c; --violet-soft: rgba(232,179,76,0.2);
+    --number-font: 'Orbitron', sans-serif;
+    --radius: 10px;
+  }
+  body[data-theme="starwars"]::after {
+    content: ''; position: fixed; inset: 0; pointer-events: none; opacity: 0.35;
+    background-image:
+      radial-gradient(1px 1px at 10% 20%, #fff, transparent),
+      radial-gradient(1px 1px at 80% 10%, #fff, transparent),
+      radial-gradient(1px 1px at 60% 70%, #fff, transparent),
+      radial-gradient(1px 1px at 30% 85%, #fff, transparent),
+      radial-gradient(1px 1px at 92% 60%, #fff, transparent),
+      radial-gradient(1px 1px at 45% 40%, #fff, transparent);
+    background-size: 100% 100%;
   }
   * { box-sizing: border-box; }
   html, body { height: 100%; margin: 0; }
@@ -24,19 +48,21 @@
     font-family: -apple-system, 'Segoe UI', Roboto, sans-serif;
     padding: 14px; display: flex; flex-direction: row; gap: 12px; overflow: hidden;
     background:
-      radial-gradient(circle at 12% 18%, rgba(139,123,255,0.35), transparent 45%),
-      radial-gradient(circle at 88% 82%, rgba(29,185,84,0.18), transparent 50%),
-      radial-gradient(circle at 85% 10%, rgba(245,185,92,0.16), transparent 40%),
+      radial-gradient(circle at 12% 18%, var(--blob1), transparent 45%),
+      radial-gradient(circle at 88% 82%, var(--blob2), transparent 50%),
+      radial-gradient(circle at 85% 10%, var(--blob3), transparent 40%),
       linear-gradient(160deg, var(--bg-a), var(--bg-b));
     background-attachment: fixed;
+    transition: background 0.4s ease;
   }
   button, input { -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
   button { font-family: inherit; user-select: none; }
   .card {
     background: var(--glass); backdrop-filter: blur(18px); -webkit-backdrop-filter: blur(18px);
-    border: 1px solid var(--border); border-radius: 20px; padding: 14px;
+    border: 1px solid var(--border); border-radius: var(--radius); padding: 14px;
     box-shadow: 0 8px 30px rgba(0,0,0,0.25); position: relative; overflow: hidden;
     container-type: size; container-name: card;
+    transition: border-radius 0.3s ease, border-color 0.3s ease, background 0.3s ease;
   }
   h2 { font-size: clamp(0.8rem, min(3.4cqi, 5.5cqb), 1.05rem); font-weight: 600; color: var(--sub); margin: 0 0 10px; display: flex; align-items: center; gap: 8px; }
 
@@ -46,7 +72,7 @@
 
   /* Oben links: Uhrzeit/Datum/KW */
   .time-card { flex: 0.46; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; gap: min(2cqi, 3cqb); }
-  .clock { font-family: 'Outfit', sans-serif; font-weight: 800; font-size: clamp(1.9rem, min(19cqi, 32cqb), 7rem); line-height: 1;
+  .clock { font-family: var(--number-font); font-weight: 800; font-size: clamp(1.9rem, min(19cqi, 32cqb), 7rem); line-height: 1;
     background: linear-gradient(120deg, #fff, var(--violet)); -webkit-background-clip: text; background-clip: text; color: transparent; }
   .date-line { color: var(--text); font-size: clamp(0.9rem, min(7cqi, 11cqb), 1.5rem); font-weight: 600; }
   .kw-badge { color: var(--sub); font-size: clamp(0.72rem, min(4.5cqi, 7.5cqb), 1rem); font-weight: 600; padding: 0.8cqi 3cqi; background: var(--violet-soft); border-radius: 20px; }
@@ -59,7 +85,7 @@
   .weather-card::after {
     content: '☁️'; position: absolute; left: -25px; top: -25px; font-size: 6rem; opacity: 0.06;
   }
-  .weather-temp { font-family: 'Outfit', sans-serif; font-size: clamp(1.6rem, min(20cqi, 28cqb), 3.4rem); font-weight: 700; }
+  .weather-temp { font-family: var(--number-font); font-size: clamp(1.6rem, min(20cqi, 28cqb), 3.4rem); font-weight: 700; }
   .weather-desc { color: var(--sub); font-size: clamp(0.7rem, min(6cqi, 8.5cqb), 1rem); }
   .weather-minmax { color: var(--sub); font-size: clamp(0.65rem, min(5cqi, 7.5cqb), 0.95rem); padding: 0.6cqi 2.5cqi; background: var(--weather-soft); border-radius: 20px; margin-top: 2px; }
   .weather-icon { font-size: clamp(1.8rem, min(24cqi, 30cqb), 3.8rem); filter: drop-shadow(0 4px 10px rgba(245,185,92,0.35)); }
@@ -68,7 +94,7 @@
   .spotify-card::after {
     content: '♫'; position: absolute; right: -15px; bottom: -35px; font-size: 8rem; opacity: 0.07; color: var(--green);
   }
-  .art { width: clamp(64px, min(34cqi, 42cqb), 130px); height: clamp(64px, min(34cqi, 42cqb), 130px); border-radius: 14px; background: var(--glass-strong); object-fit: cover; flex-shrink: 0;
+  .art { width: clamp(64px, min(34cqi, 42cqb), 130px); height: clamp(64px, min(34cqi, 42cqb), 130px); border-radius: calc(var(--radius) * 0.7); background: var(--glass-strong); object-fit: cover; flex-shrink: 0;
     box-shadow: 0 0 0 3px var(--green-soft), 0 8px 22px rgba(29,185,84,0.3); }
   .track { font-weight: 700; font-size: clamp(0.8rem, min(7cqi, 10cqb), 1.15rem); max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .artist { color: var(--sub); font-size: clamp(0.7rem, min(6cqi, 8.5cqb), 1rem); max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
@@ -97,7 +123,7 @@
   ul::-webkit-scrollbar-track { background: transparent; }
   ul::-webkit-scrollbar-thumb { background: rgba(139,123,255,0.45); border-radius: 10px; }
   ul::-webkit-scrollbar-thumb:hover { background: rgba(139,123,255,0.7); }
-  li { display: flex; align-items: center; gap: 10px; padding: clamp(8px, 1.6cqi, 16px) clamp(10px, 2cqi, 18px); background: var(--glass-strong); border: 1px solid var(--border); border-radius: 14px; }
+  li { display: flex; align-items: center; gap: 10px; padding: clamp(8px, 1.6cqi, 16px) clamp(10px, 2cqi, 18px); background: var(--glass-strong); border: 1px solid var(--border); border-radius: calc(var(--radius) * 0.7); }
   li.done { opacity: 0.6; }
   li.done .label { text-decoration: line-through; color: var(--sub); }
   .label { flex: 1; word-break: break-word; font-size: clamp(0.95rem, 2.3cqi, 1.2rem); }
@@ -108,9 +134,16 @@
   .empty { color: var(--sub); font-size: clamp(0.8rem, 2.6cqi, 1.1rem); padding: 30px 0; text-align: center; }
   .empty .empty-icon { font-size: clamp(1.6rem, 6cqi, 2.6rem); display: block; margin-bottom: 8px; opacity: 0.7; }
   .status { font-size: clamp(0.6rem, 2cqi, 0.8rem); color: var(--sub); text-align: right; min-height: 1em; }
+  .fs-btn { position: fixed; top: 10px; right: 10px; z-index: 50; width: 34px; height: 34px; border-radius: 50%;
+    background: rgba(255,255,255,0.08); border: 1px solid var(--border); color: var(--sub); font-size: 0.9rem;
+    cursor: pointer; display: flex; align-items: center; justify-content: center; opacity: 0.5; }
+  .fs-btn:hover { opacity: 1; }
+  .theme-btn { right: 52px; }
 </style>
 </head>
 <body>
+  <button class="fs-btn theme-btn" id="themeBtn" title="Theme wechseln">🌌</button>
+  <button class="fs-btn" id="fsBtn" title="Vollbild umschalten">⛶</button>
   <div class="col-left">
     <div class="card time-card">
       <div class="clock" id="clock">--:--</div>
@@ -142,6 +175,34 @@
   </div>
 
 <script>
+/* ---------------- Theme-Umschalter ---------------- */
+const THEME_KEY = 'dashboard_theme_v1';
+const themeBtn = document.getElementById('themeBtn');
+function applyTheme(theme) {
+  if (theme === 'starwars') {
+    document.body.setAttribute('data-theme', 'starwars');
+    themeBtn.textContent = '🎨';
+  } else {
+    document.body.removeAttribute('data-theme');
+    themeBtn.textContent = '🌌';
+  }
+}
+applyTheme(localStorage.getItem(THEME_KEY) || 'default');
+themeBtn.addEventListener('click', () => {
+  const next = document.body.getAttribute('data-theme') === 'starwars' ? 'default' : 'starwars';
+  localStorage.setItem(THEME_KEY, next);
+  applyTheme(next);
+});
+
+/* ---------------- Vollbild-Toggle ---------------- */
+document.getElementById('fsBtn').addEventListener('click', () => {
+  if (!document.fullscreenElement) {
+    document.documentElement.requestFullscreen().catch(() => {});
+  } else {
+    document.exitFullscreen().catch(() => {});
+  }
+});
+
 /* ---------------- Uhrzeit / Datum / Kalenderwoche ---------------- */
 function isoWeek(d) {
   const date = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
