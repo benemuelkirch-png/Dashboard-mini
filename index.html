@@ -67,19 +67,19 @@
   h2 { font-size: clamp(0.8rem, min(3.4cqi, 5.5cqb), 1.05rem); font-weight: 600; color: var(--sub); margin: 0 0 10px; display: flex; align-items: center; gap: 8px; }
 
   /* Spalten */
-  .col-left { flex: 1; display: flex; flex-direction: column; gap: 12px; min-width: 0; min-height: 0; }
+  .col-left { flex: 1; display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr; gap: 12px; min-width: 0; min-height: 0; }
   .col-right { flex: 1; display: flex; flex-direction: column; min-width: 0; min-height: 0; }
+  .col-left .card { display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; gap: 8px; min-width: 0; min-height: 0; }
 
   /* Oben links: Uhrzeit/Datum/KW */
-  .time-card { flex: 0.46; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; gap: min(2cqi, 3cqb); }
-  .clock { font-family: var(--number-font); font-weight: 800; font-size: clamp(1.9rem, min(19cqi, 32cqb), 7rem); line-height: 1;
+  .time-card { gap: min(2cqi, 3cqb); }
+  .time-card::after {
+    content: '🕐'; position: absolute; right: -20px; bottom: -30px; font-size: 7rem; opacity: 0.06;
+  }
+  .clock { font-family: var(--number-font); font-weight: 800; font-size: clamp(1.6rem, min(19cqi, 26cqb), 7rem); line-height: 1;
     background: linear-gradient(120deg, #fff, var(--violet)); -webkit-background-clip: text; background-clip: text; color: transparent; }
-  .date-line { color: var(--text); font-size: clamp(0.9rem, min(7cqi, 11cqb), 1.5rem); font-weight: 600; }
-  .kw-badge { color: var(--sub); font-size: clamp(0.72rem, min(4.5cqi, 7.5cqb), 1rem); font-weight: 600; padding: 0.8cqi 3cqi; background: var(--violet-soft); border-radius: 20px; }
-
-  /* Unten links: Wetter + Spotify nebeneinander */
-  .bottom-row { flex: 0.54; display: flex; flex-direction: row; gap: 12px; min-height: 0; }
-  .bottom-row .card { flex: 1; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; gap: 8px; min-width: 0; }
+  .date-line { color: var(--text); font-size: clamp(0.8rem, min(7cqi, 9cqb), 1.5rem); font-weight: 600; }
+  .kw-badge { color: var(--sub); font-size: clamp(0.65rem, min(4.5cqi, 6cqb), 1rem); font-weight: 600; padding: 0.8cqi 3cqi; background: var(--violet-soft); border-radius: 20px; }
 
   /* Wetter */
   .weather-card::after {
@@ -131,40 +131,64 @@
   li.done .check { background: var(--violet); }
   li.done .check::after { content: '✓'; }
   .del { background: none; color: var(--sub); border: none; padding: 8px 10px; font-size: clamp(1rem, 2.4cqi, 1.3rem); cursor: pointer; }
-  .empty { color: var(--sub); font-size: clamp(0.8rem, 2.6cqi, 1.1rem); padding: 30px 0; text-align: center; }
-  .empty .empty-icon { font-size: clamp(1.6rem, 6cqi, 2.6rem); display: block; margin-bottom: 8px; opacity: 0.7; }
   .status { font-size: clamp(0.6rem, 2cqi, 0.8rem); color: var(--sub); text-align: right; min-height: 1em; }
-  .fs-btn { position: fixed; top: 10px; right: 10px; z-index: 50; width: 34px; height: 34px; border-radius: 50%;
-    background: rgba(255,255,255,0.08); border: 1px solid var(--border); color: var(--sub); font-size: 0.9rem;
-    cursor: pointer; display: flex; align-items: center; justify-content: center; opacity: 0.5; }
-  .fs-btn:hover { opacity: 1; }
-  .theme-btn { right: 52px; }
+  /* Streamdeck / Schnellzugriff */
+  .streamdeck-card { align-items: stretch !important; text-align: left !important; justify-content: stretch !important; position: relative; padding-top: 32px; }
+  .streamdeck-card::after {
+    content: '🚀'; position: absolute; left: -20px; top: -25px; font-size: 6.5rem; opacity: 0.06;
+  }
+  .sd-grid { display: grid; grid-template-columns: repeat(3, 1fr); grid-template-rows: repeat(3, 1fr); gap: min(2.2cqi, 3.2cqb); flex: 1; min-height: 0; }
+  .sd-btn { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px;
+    background: var(--glass-strong); border: 1px solid var(--border); border-radius: calc(var(--radius) * 0.6);
+    cursor: pointer; color: var(--text); padding: 4px; position: relative; overflow: hidden; user-select: none; -webkit-user-select: none; }
+  .sd-btn .sd-icon { font-size: clamp(0.95rem, min(11cqi, 15cqb), 1.8rem); }
+  .sd-btn .sd-label { font-size: clamp(0.5rem, min(4cqi, 5.5cqb), 0.75rem); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 95%; }
+  .sd-remove { position: absolute; top: 2px; right: 2px; width: 15px; height: 15px; border-radius: 50%;
+    background: rgba(255,90,90,0.9); color: #fff; font-size: 0.6rem; line-height: 1; border: none; cursor: pointer;
+    display: none; align-items: center; justify-content: center; z-index: 2; }
+  .streamdeck-card.edit-mode .sd-remove { display: flex; }
+  .streamdeck-card.edit-mode .sd-btn { opacity: 0.85; }
+
+  /* Ecken-Buttons: in die jeweilige Kachel eingebettet, nicht am Viewport */
+  .corner-toolbar { position: absolute; top: 10px; z-index: 5; display: flex; gap: 6px; }
+  .corner-toolbar.left { left: 10px; }
+  .corner-toolbar.right { right: 10px; }
+  .corner-btn { width: 26px; height: 26px; border-radius: 50%;
+    background: rgba(255,255,255,0.08); border: 1px solid var(--border); color: var(--sub); font-size: 0.78rem;
+    cursor: pointer; display: flex; align-items: center; justify-content: center; opacity: 0.65;
+    transition: opacity 0.2s ease, background 0.2s ease; padding: 0; }
+  .corner-btn:hover { opacity: 1; background: rgba(255,255,255,0.14); }
 </style>
 </head>
 <body>
-  <button class="fs-btn theme-btn" id="themeBtn" title="Theme wechseln">🌌</button>
-  <button class="fs-btn" id="fsBtn" title="Vollbild umschalten">⛶</button>
   <div class="col-left">
     <div class="card time-card">
+      <div class="corner-toolbar left">
+        <button class="corner-btn" id="fsBtn" title="Vollbild umschalten">⛶</button>
+        <button class="corner-btn" id="themeBtn" title="Theme wechseln">🌌</button>
+      </div>
       <div class="clock" id="clock">--:--</div>
       <div class="date-line" id="date"></div>
       <div class="kw-badge" id="kw"></div>
     </div>
-    <div class="bottom-row">
-      <div class="card weather-card" id="weatherCard"><div class="weather-desc">Wetter lädt…</div></div>
-      <div class="card spotify-card" id="spotifyCard"></div>
+    <div class="card weather-card" id="weatherCard"><div class="weather-desc">Wetter lädt…</div></div>
+    <div class="card spotify-card" id="spotifyCard"></div>
+    <div class="card streamdeck-card" id="streamdeckCard">
+      <div class="corner-toolbar right">
+        <button class="corner-btn" id="sdAddBtn" title="Hinzufügen">+</button>
+        <button class="corner-btn" id="sdEditToggle" title="Bearbeiten">✎</button>
+      </div>
+      <div class="sd-grid" id="sdGrid"></div>
     </div>
   </div>
 
   <div class="col-right">
     <div class="card todo-card">
-      <h2>📋 To-Dos</h2>
       <form id="form">
         <input type="text" id="newTodo" placeholder="Neue Aufgabe…" autocomplete="off">
         <button type="submit" class="link-btn">+</button>
       </form>
       <ul id="list"></ul>
-      <div class="empty" id="empty" style="display:none;"><span class="empty-icon">✨</span>Keine offenen Aufgaben</div>
       <div class="status" id="status"></div>
       <div style="display:flex; gap:8px; margin-top:12px;">
         <button type="button" id="exportBtn" style="background:rgba(255,255,255,0.1); border:1px solid var(--border); color:var(--text); border-radius:12px; flex:1; padding:9px; cursor:pointer;">Backup speichern</button>
@@ -175,6 +199,51 @@
   </div>
 
 <script>
+/* ---------------- Streamdeck / Schnellzugriff ---------------- */
+const SD_KEY = 'dashboard_streamdeck_v1';
+let sdLinks = [];
+try { sdLinks = JSON.parse(localStorage.getItem(SD_KEY)) || []; } catch (e) { sdLinks = []; }
+const sdGrid = document.getElementById('sdGrid');
+const sdCard = document.getElementById('streamdeckCard');
+
+function saveStreamdeck() {
+  localStorage.setItem(SD_KEY, JSON.stringify(sdLinks));
+}
+function renderStreamdeck() {
+  sdGrid.innerHTML = '';
+  sdLinks.forEach((link, idx) => {
+    const btn = document.createElement('div');
+    btn.className = 'sd-btn';
+    btn.innerHTML = `<button class="sd-remove" title="Entfernen">✕</button><div class="sd-icon">${link.icon || '🔗'}</div><div class="sd-label">${link.label}</div>`;
+    btn.addEventListener('click', (e) => {
+      if (e.target.closest('.sd-remove')) return;
+      if (sdCard.classList.contains('edit-mode')) return;
+      window.open(link.url, '_blank');
+    });
+    btn.querySelector('.sd-remove').addEventListener('click', () => {
+      sdLinks.splice(idx, 1);
+      saveStreamdeck();
+      renderStreamdeck();
+    });
+    sdGrid.appendChild(btn);
+  });
+}
+function addStreamdeckLink() {
+  const label = prompt('Name des Links (z. B. "Mail")');
+  if (!label) return;
+  const urlRaw = prompt('Link, genau so wie er aufgerufen werden soll (z. B. https://outlook.office.com oder file:///C:/Ordner/Datei.html)');
+  if (!urlRaw) return;
+  const icon = prompt('Icon/Emoji (optional)', '🔗') || '🔗';
+  sdLinks.push({ label: label.trim(), url: urlRaw.trim(), icon: icon.trim() });
+  saveStreamdeck();
+  renderStreamdeck();
+}
+document.getElementById('sdAddBtn').addEventListener('click', addStreamdeckLink);
+document.getElementById('sdEditToggle').addEventListener('click', () => {
+  sdCard.classList.toggle('edit-mode');
+});
+renderStreamdeck();
+
 /* ---------------- Theme-Umschalter ---------------- */
 const THEME_KEY = 'dashboard_theme_v1';
 const themeBtn = document.getElementById('themeBtn');
@@ -295,12 +364,10 @@ const STORAGE_KEY = 'mini_dashboard_todos_v1';
 let todos = [];
 try { todos = JSON.parse(localStorage.getItem(STORAGE_KEY)) || []; } catch (e) { todos = []; }
 const list = document.getElementById('list');
-const empty = document.getElementById('empty');
 const statusEl = document.getElementById('status');
 
 function render() {
   list.innerHTML = '';
-  empty.style.display = todos.length ? 'none' : 'block';
   todos.forEach(t => {
     const li = document.createElement('li');
     if (t.done) li.classList.add('done');
