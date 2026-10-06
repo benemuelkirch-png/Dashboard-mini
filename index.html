@@ -150,12 +150,13 @@
   .streamdeck-card::after {
     content: '🚀'; position: absolute; left: -20px; top: -25px; font-size: 6.5rem; opacity: 0.06;
   }
-  .sd-grid { display: grid; grid-template-columns: repeat(3, 1fr); grid-template-rows: repeat(3, 1fr); gap: min(2.2cqi, 3.2cqb); flex: 1; min-height: 0; }
+  .sd-grid { display: grid; grid-template-columns: repeat(3, 1fr); grid-template-rows: repeat(3, 1fr); gap: min(2.2cqi, 3.2cqb); flex: 1; min-height: 0; min-width: 0; }
   .sd-btn { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px;
     background: var(--glass-strong); border: 1px solid var(--border); border-radius: calc(var(--radius) * 0.6);
-    cursor: pointer; color: var(--text); padding: 4px; position: relative; overflow: hidden; user-select: none; -webkit-user-select: none; }
-  .sd-btn .sd-icon { font-size: clamp(0.95rem, min(11cqi, 15cqb), 1.8rem); }
-  .sd-btn .sd-label { font-size: clamp(0.5rem, min(4cqi, 5.5cqb), 0.75rem); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 95%; }
+    cursor: pointer; color: var(--text); padding: 4px; position: relative; overflow: hidden; user-select: none; -webkit-user-select: none;
+    min-width: 0; min-height: 0; }
+  .sd-btn .sd-icon { font-size: clamp(0.6rem, min(11cqi, 15cqb), 1.8rem); min-width: 0; }
+  .sd-btn .sd-label { font-size: clamp(0.35rem, min(4cqi, 5.5cqb), 0.75rem); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 95%; min-width: 0; }
   .sd-remove { position: absolute; top: 2px; right: 2px; width: 15px; height: 15px; border-radius: 50%;
     background: rgba(255,90,90,0.9); color: #fff; font-size: 0.6rem; line-height: 1; border: none; cursor: pointer;
     display: none; align-items: center; justify-content: center; z-index: 2; }
