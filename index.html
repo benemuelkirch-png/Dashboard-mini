@@ -80,6 +80,7 @@
     background: linear-gradient(120deg, #fff, var(--violet)); -webkit-background-clip: text; background-clip: text; color: transparent; }
   .date-line { color: var(--text); font-size: clamp(0.8rem, min(7cqi, 9cqb), 1.5rem); font-weight: 600; }
   .kw-badge { color: var(--sub); font-size: clamp(0.65rem, min(4.5cqi, 6cqb), 1rem); font-weight: 600; padding: 0.8cqi 3cqi; background: var(--violet-soft); border-radius: 20px; }
+  .fun-fact { color: var(--sub); font-size: clamp(0.6rem, min(3.6cqi, 5cqb), 0.85rem); margin-top: 4px; max-width: 95%; line-height: 1.3; }
 
   /* Wetter */
   .weather-card::after {
@@ -111,6 +112,18 @@
   .settings { display: flex; flex-direction: column; gap: 8px; width: 95%; }
   .settings label { font-size: 0.7rem; color: var(--sub); text-align: left; }
   input[type=text] { background: rgba(0,0,0,0.2); border: 1px solid var(--border); color: var(--text); border-radius: 12px; padding: 11px 13px; font-size: 0.9rem; }
+  .flip-btn { background: var(--glass-strong); border: 1px solid var(--border); color: var(--text); border-radius: 50%;
+    width: clamp(26px, min(10cqi, 14cqb), 32px); height: clamp(26px, min(10cqi, 14cqb), 32px); font-size: clamp(0.7rem, min(5cqi, 7cqb), 0.85rem);
+    cursor: pointer; position: absolute; top: 10px; right: 10px; z-index: 3; display: flex; align-items: center; justify-content: center; padding: 0; }
+  .pl-view { display: flex; flex-direction: column; width: 100%; height: 100%; min-height: 0; }
+  .pl-header { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; padding-right: 36px; }
+  .pl-header h3 { margin: 0; font-size: clamp(0.8rem, 3cqi, 1rem); color: var(--text); }
+  .pl-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px; overflow-y: auto; flex: 1; min-height: 0; width: 100%; text-align: left; }
+  .pl-row { display: flex; align-items: center; gap: 10px; padding: 8px 10px; background: var(--glass-strong); border: 1px solid var(--border);
+    border-radius: calc(var(--radius) * 0.6); cursor: pointer; }
+  .pl-row:hover { background: rgba(255,255,255,0.16); }
+  .pl-art { width: 34px; height: 34px; border-radius: 6px; object-fit: cover; background: var(--bg-a); flex-shrink: 0; }
+  .pl-name { font-size: clamp(0.78rem, 2.4cqi, 0.95rem); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
   /* ToDo rechts, volle Höhe */
   .todo-card { flex: 1; display: flex; flex-direction: column; min-height: 0; }
@@ -146,7 +159,18 @@
   .sd-remove { position: absolute; top: 2px; right: 2px; width: 15px; height: 15px; border-radius: 50%;
     background: rgba(255,90,90,0.9); color: #fff; font-size: 0.6rem; line-height: 1; border: none; cursor: pointer;
     display: none; align-items: center; justify-content: center; z-index: 2; }
-  .streamdeck-card.edit-mode .sd-remove { display: flex; }
+  .sd-edit { position: absolute; top: 2px; left: 2px; width: 15px; height: 15px; border-radius: 50%;
+    background: rgba(255,255,255,0.85); color: #222; font-size: 0.55rem; line-height: 1; border: none; cursor: pointer;
+    display: none; align-items: center; justify-content: center; z-index: 2; }
+  .sd-move { position: absolute; bottom: 2px; width: 15px; height: 15px; border-radius: 50%;
+    background: rgba(255,255,255,0.7); color: #222; font-size: 0.6rem; line-height: 1; border: none; cursor: pointer;
+    display: none; align-items: center; justify-content: center; z-index: 2; padding: 0; }
+  .sd-move-left { left: 2px; }
+  .sd-move-right { right: 2px; }
+  .sd-move[disabled] { opacity: 0.3; cursor: not-allowed; }
+  .streamdeck-card.edit-mode .sd-remove,
+  .streamdeck-card.edit-mode .sd-edit,
+  .streamdeck-card.edit-mode .sd-move { display: flex; }
   .streamdeck-card.edit-mode .sd-btn { opacity: 0.85; }
 
   /* Ecken-Buttons: in die jeweilige Kachel eingebettet, nicht am Viewport */
@@ -158,6 +182,20 @@
     cursor: pointer; display: flex; align-items: center; justify-content: center; opacity: 0.65;
     transition: opacity 0.2s ease, background 0.2s ease; padding: 0; }
   .corner-btn:hover { opacity: 1; background: rgba(255,255,255,0.14); }
+
+  /* Modal zum Bearbeiten einer Streamdeck-Kachel */
+  .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.55); display: none;
+    align-items: center; justify-content: center; z-index: 100; }
+  .modal-overlay.open { display: flex; }
+  .modal-box { background: var(--bg-b); border: 1px solid var(--border); border-radius: var(--radius);
+    padding: 20px; width: min(320px, 85vw); box-shadow: 0 20px 50px rgba(0,0,0,0.5); }
+  .modal-box h3 { margin: 0 0 14px; font-size: 1rem; color: var(--text); }
+  .modal-box label { display: block; font-size: 0.75rem; color: var(--sub); margin: 10px 0 4px; }
+  .modal-box input[type=text] { width: 100%; }
+  .modal-actions { display: flex; gap: 8px; margin-top: 18px; }
+  .modal-actions button { flex: 1; padding: 10px; border-radius: 12px; border: none; cursor: pointer; font-size: 0.9rem; }
+  .modal-save { background: var(--violet); color: #fff; font-weight: 600; }
+  .modal-cancel { background: rgba(255,255,255,0.1); color: var(--text); }
 </style>
 </head>
 <body>
@@ -170,6 +208,7 @@
       <div class="clock" id="clock">--:--</div>
       <div class="date-line" id="date"></div>
       <div class="kw-badge" id="kw"></div>
+      <div class="fun-fact" id="funFact"></div>
     </div>
     <div class="card weather-card" id="weatherCard"><div class="weather-desc">Wetter lädt…</div></div>
     <div class="card spotify-card" id="spotifyCard"></div>
@@ -198,6 +237,22 @@
     </div>
   </div>
 
+  <div class="modal-overlay" id="tileModal">
+    <div class="modal-box">
+      <h3 id="tileModalTitle">Kachel bearbeiten</h3>
+      <label>Name</label>
+      <input type="text" id="tileModalLabel" placeholder="z. B. Mail">
+      <label>Link</label>
+      <input type="text" id="tileModalUrl" placeholder="https://… oder file:///C:/Ordner/Datei.html">
+      <label>Icon/Emoji</label>
+      <input type="text" id="tileModalIcon" placeholder="🔗">
+      <div class="modal-actions">
+        <button class="modal-cancel" id="tileModalCancel">Abbrechen</button>
+        <button class="modal-save" id="tileModalSave">Speichern</button>
+      </div>
+    </div>
+  </div>
+
 <script>
 /* ---------------- Streamdeck / Schnellzugriff ---------------- */
 const SD_KEY = 'dashboard_streamdeck_v1';
@@ -214,9 +269,13 @@ function renderStreamdeck() {
   sdLinks.forEach((link, idx) => {
     const btn = document.createElement('div');
     btn.className = 'sd-btn';
-    btn.innerHTML = `<button class="sd-remove" title="Entfernen">✕</button><div class="sd-icon">${link.icon || '🔗'}</div><div class="sd-label">${link.label}</div>`;
+    btn.innerHTML = `<button class="sd-remove" title="Entfernen">✕</button>` +
+      `<button class="sd-edit" title="Bearbeiten">✎</button>` +
+      `<button class="sd-move sd-move-left" title="Nach vorne">◀</button>` +
+      `<button class="sd-move sd-move-right" title="Nach hinten">▶</button>` +
+      `<div class="sd-icon">${link.icon || '🔗'}</div><div class="sd-label">${link.label}</div>`;
     btn.addEventListener('click', (e) => {
-      if (e.target.closest('.sd-remove')) return;
+      if (e.target.closest('.sd-remove') || e.target.closest('.sd-edit') || e.target.closest('.sd-move')) return;
       if (sdCard.classList.contains('edit-mode')) return;
       window.open(link.url, '_blank');
     });
@@ -225,19 +284,74 @@ function renderStreamdeck() {
       saveStreamdeck();
       renderStreamdeck();
     });
+    btn.querySelector('.sd-edit').addEventListener('click', () => {
+      editStreamdeckLink(idx);
+    });
+    const leftBtn = btn.querySelector('.sd-move-left');
+    const rightBtn = btn.querySelector('.sd-move-right');
+    leftBtn.disabled = idx === 0;
+    rightBtn.disabled = idx === sdLinks.length - 1;
+    leftBtn.addEventListener('click', () => moveStreamdeckLink(idx, -1));
+    rightBtn.addEventListener('click', () => moveStreamdeckLink(idx, 1));
     sdGrid.appendChild(btn);
   });
 }
-function addStreamdeckLink() {
-  const label = prompt('Name des Links (z. B. "Mail")');
-  if (!label) return;
-  const urlRaw = prompt('Link, genau so wie er aufgerufen werden soll (z. B. https://outlook.office.com oder file:///C:/Ordner/Datei.html)');
-  if (!urlRaw) return;
-  const icon = prompt('Icon/Emoji (optional)', '🔗') || '🔗';
-  sdLinks.push({ label: label.trim(), url: urlRaw.trim(), icon: icon.trim() });
+function moveStreamdeckLink(idx, dir) {
+  const newIdx = idx + dir;
+  if (newIdx < 0 || newIdx >= sdLinks.length) return;
+  const [item] = sdLinks.splice(idx, 1);
+  sdLinks.splice(newIdx, 0, item);
   saveStreamdeck();
   renderStreamdeck();
 }
+/* ---- Modal zum Hinzufügen/Bearbeiten einer Kachel ---- */
+const tileModal = document.getElementById('tileModal');
+const tileModalTitle = document.getElementById('tileModalTitle');
+const tileModalLabel = document.getElementById('tileModalLabel');
+const tileModalUrl = document.getElementById('tileModalUrl');
+const tileModalIcon = document.getElementById('tileModalIcon');
+let tileModalEditIdx = null; // null = neue Kachel, Zahl = bestehende Kachel bearbeiten
+
+function openTileModal(idx) {
+  tileModalEditIdx = (typeof idx === 'number') ? idx : null;
+  if (tileModalEditIdx !== null) {
+    const link = sdLinks[tileModalEditIdx] || {};
+    tileModalTitle.textContent = 'Kachel bearbeiten';
+    tileModalLabel.value = link.label || '';
+    tileModalUrl.value = link.url || '';
+    tileModalIcon.value = link.icon || '🔗';
+  } else {
+    tileModalTitle.textContent = 'Neue Kachel';
+    tileModalLabel.value = '';
+    tileModalUrl.value = '';
+    tileModalIcon.value = '🔗';
+  }
+  tileModal.classList.add('open');
+  setTimeout(() => tileModalLabel.focus(), 50);
+}
+function closeTileModal() {
+  tileModal.classList.remove('open');
+  tileModalEditIdx = null;
+}
+document.getElementById('tileModalCancel').addEventListener('click', closeTileModal);
+tileModal.addEventListener('click', (e) => { if (e.target === tileModal) closeTileModal(); });
+document.getElementById('tileModalSave').addEventListener('click', () => {
+  const label = tileModalLabel.value.trim();
+  const url = tileModalUrl.value.trim();
+  const icon = tileModalIcon.value.trim() || '🔗';
+  if (!label || !url) { tileModalLabel.focus(); return; }
+  const entry = { label, url, icon };
+  if (tileModalEditIdx !== null) {
+    sdLinks[tileModalEditIdx] = entry;
+  } else {
+    sdLinks.push(entry);
+  }
+  saveStreamdeck();
+  renderStreamdeck();
+  closeTileModal();
+});
+function addStreamdeckLink() { openTileModal(null); }
+function editStreamdeckLink(idx) { openTileModal(idx); }
 document.getElementById('sdAddBtn').addEventListener('click', addStreamdeckLink);
 document.getElementById('sdEditToggle').addEventListener('click', () => {
   sdCard.classList.toggle('edit-mode');
@@ -287,6 +401,33 @@ function tick() {
   document.getElementById('kw').textContent = 'KW ' + isoWeek(now);
 }
 tick(); setInterval(tick, 30000);
+
+/* ---------------- Fun Fact des Tages (numbersapi.com) ---------------- */
+const FACT_KEY = 'dashboard_funfact_v1';
+async function loadFunFact() {
+  const factEl = document.getElementById('funFact');
+  const now = new Date();
+  const todayStr = now.getFullYear() + '-' + (now.getMonth() + 1) + '-' + now.getDate();
+  let cached = null;
+  try { cached = JSON.parse(localStorage.getItem(FACT_KEY)); } catch (e) {}
+  if (cached && cached.date === todayStr && cached.text) {
+    factEl.textContent = '💡 ' + cached.text;
+    return;
+  }
+  try {
+    const month = now.getMonth() + 1, day = now.getDate();
+    const res = await fetch(`https://numbersapi.com/${month}/${day}/date?json`);
+    const data = await res.json();
+    const text = data && data.text ? data.text : null;
+    if (text) {
+      localStorage.setItem(FACT_KEY, JSON.stringify({ date: todayStr, text }));
+      factEl.textContent = '💡 ' + text;
+    }
+  } catch (e) {
+    if (cached && cached.text) factEl.textContent = '💡 ' + cached.text;
+  }
+}
+loadFunFact();
 
 /* ---------------- Wetter (Open-Meteo, kein API-Key nötig) ---------------- */
 const WEATHER_LOC_KEY = 'dashboard_weather_loc_v1';
@@ -421,8 +562,9 @@ render();
 /* ---------------- Spotify: echte Steuerung via PKCE OAuth (kompakt) ---------------- */
 const CFG_KEY = 'spotify_pkce_config_v1';
 const TOKEN_KEY = 'spotify_pkce_tokens_v1';
-const SCOPES = 'user-read-currently-playing user-read-playback-state user-modify-playback-state user-library-modify user-library-read';
+const SCOPES = 'user-read-currently-playing user-read-playback-state user-modify-playback-state user-library-modify user-library-read playlist-read-private playlist-read-collaborative';
 const card = document.getElementById('spotifyCard');
+let spotifyView = 'player'; // 'player' oder 'playlists' - steuert, ob pollNow() den DOM anfassen darf
 
 function getConfig() { try { return JSON.parse(localStorage.getItem(CFG_KEY)) || null; } catch (e) { return null; } }
 function setConfig(cfg) { localStorage.setItem(CFG_KEY, JSON.stringify(cfg)); }
@@ -500,7 +642,9 @@ async function refreshTokenIfNeeded() {
 function fmtTime(ms) { const s = Math.floor(ms / 1000); return Math.floor(s / 60) + ':' + String(s % 60).padStart(2, '0'); }
 
 function renderPlayer() {
+  spotifyView = 'player';
   card.innerHTML = `
+    <button class="flip-btn" id="plFlipBtn" title="Playlists">📂</button>
     <img class="art" id="art" alt="Cover">
     <div style="min-width:0; width:100%;">
       <div class="track" id="track">Lädt…</div>
@@ -519,6 +663,7 @@ function renderPlayer() {
     localStorage.removeItem(TOKEN_KEY);
     startLogin();
   };
+  document.getElementById('plFlipBtn').onclick = renderPlaylistsView;
   document.getElementById('prevBtn').onclick = () => spotifyApi('/me/player/previous', 'POST');
   document.getElementById('nextBtn').onclick = () => spotifyApi('/me/player/next', 'POST');
   document.getElementById('playBtn').onclick = async () => {
@@ -536,17 +681,60 @@ function renderPlayer() {
     btn.classList.toggle('liked');
     btn.textContent = liked ? '♡' : '♥';
   };
+  pollNow();
 }
-async function spotifyApi(path, method) {
+
+/* ---- Zweite Seite der Spotify-Kachel: eigene Playlists durchblättern & starten ---- */
+async function renderPlaylistsView() {
+  spotifyView = 'playlists';
+  card.innerHTML = `
+    <button class="flip-btn" id="plBackBtn" title="Zurück zum Player">▶</button>
+    <div class="pl-view">
+      <div class="pl-header"><h3>Deine Playlists</h3></div>
+      <div class="conn-note" id="plNote">Lädt…</div>
+      <ul class="pl-list" id="plList"></ul>
+    </div>`;
+  document.getElementById('plBackBtn').onclick = () => { renderPlayer(); };
+  const data = await spotifyApi('/me/playlists?limit=50', 'GET');
+  const noteEl = document.getElementById('plNote');
+  const listEl = document.getElementById('plList');
+  if (!data || !Array.isArray(data.items)) {
+    if (noteEl) noteEl.textContent = 'Playlists konnten nicht geladen werden (Berechtigung fehlt evtl. – einmal "Neu verbinden").';
+    return;
+  }
+  if (noteEl) noteEl.textContent = '';
+  data.items.filter(Boolean).forEach(pl => {
+    const li = document.createElement('li');
+    li.className = 'pl-row';
+    const img = pl.images && pl.images[0] ? pl.images[0].url : '';
+    li.innerHTML = `${img ? `<img class="pl-art" src="${img}" alt="">` : '<div class="pl-art"></div>'}<div class="pl-name">${pl.name}</div>`;
+    li.addEventListener('click', async () => {
+      if (noteEl) noteEl.textContent = 'Starte „' + pl.name + '“…';
+      await spotifyApi('/me/player/play', 'PUT', { context_uri: pl.uri });
+      renderPlayer();
+    });
+    listEl.appendChild(li);
+  });
+  if (!data.items.length && noteEl) noteEl.textContent = 'Keine Playlists gefunden.';
+}
+
+async function spotifyApi(path, method, body) {
   const t = await refreshTokenIfNeeded(); if (!t) return null;
-  const res = await fetch('https://api.spotify.com/v1' + path, { method, headers: { 'Authorization': 'Bearer ' + t.access_token } });
+  const opts = { method, headers: { 'Authorization': 'Bearer ' + t.access_token } };
+  if (body !== undefined) {
+    opts.headers['Content-Type'] = 'application/json';
+    opts.body = JSON.stringify(body);
+  }
+  const res = await fetch('https://api.spotify.com/v1' + path, opts);
   if (res.status === 204 || res.status === 202) return null;
-  if (!res.ok) { const n = document.getElementById('connNote'); if (n) n.textContent = 'Fehler: ' + res.status; return null; }
+  if (!res.ok) { const n = document.getElementById('connNote') || document.getElementById('plNote'); if (n) n.textContent = 'Fehler: ' + res.status; return null; }
   try { return await res.json(); } catch (e) { return null; }
 }
 let lastTrackId = null;
 async function pollNow() {
+  if (spotifyView !== 'player') return;
   const data = await spotifyApi('/me/player/currently-playing', 'GET');
+  if (spotifyView !== 'player') return;
   const noteEl = document.getElementById('connNote');
   const trackEl = document.getElementById('track');
   const artistEl = document.getElementById('artist');
@@ -554,6 +742,7 @@ async function pollNow() {
   const fillEl = document.getElementById('progressFill');
   const playBtn = document.getElementById('playBtn');
   const heartBtn = document.getElementById('heartBtn');
+  if (!trackEl || !playBtn) return;
   if (!data || !data.item) {
     if (trackEl) trackEl.textContent = 'Nichts aktuell'; if (artistEl) artistEl.textContent = '';
     if (noteEl) noteEl.textContent = 'Spotify irgendwo öffnen';
